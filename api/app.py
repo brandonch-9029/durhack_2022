@@ -30,6 +30,7 @@ def save():
     
 
     uploadToBlobStorage(img_to_upload, name_of_img)
+    return 0
 
 
 

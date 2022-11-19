@@ -30,7 +30,8 @@ def save():
     
 
     uploadToBlobStorage(img_to_upload, name_of_img)
-    return 0
+    return flask.Response("{'a':'b'}", status=201, mimetype='application/json')
+
 
 
 

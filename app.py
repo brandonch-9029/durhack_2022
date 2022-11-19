@@ -10,22 +10,23 @@ import sys
 import time
 import flask
 from azure.storage.blob import BlobServiceClient
-
+import time
 storage_account_key = "htIhM+7rKVqMCz8G27yqpk7S7QPTOC8uU5Lo5viq+YjhDRfJzupx9v5+CmzpTXptVUMf5kgo5KGq+AStR4DoJQ=="
 storage_account_name = "durhack"
 connection_string = "DefaultEndpointsProtocol=https;AccountName=durhack;AccountKey=htIhM+7rKVqMCz8G27yqpk7S7QPTOC8uU5Lo5viq+YjhDRfJzupx9v5+CmzpTXptVUMf5kgo5KGq+AStR4DoJQ==;EndpointSuffix=core.windows.net"
 container_name = "img"
 
 app = flask.Flask(__name__)
-counter = 1
 def uploadToBlobStorage(img, name_of_img):
     blob_service_client = BlobServiceClient.from_connection_string(connection_string)
     blob_client = blob_service_client.get_blob_client(container=container_name, blob=name_of_img)
-
-    with open(img, "rb") as data:
+    if img.filename != '':
+        img_path = "img/" + name_of_img
+        img.save(img_path)
+        
+    with open(img_path, "rb") as data:
         blob_client.upload_blob(data)
-    counter += 1
-    return counter
+    
 
 
 @app.route("/")
@@ -42,7 +43,9 @@ def save():
     except:
         raise ValueError("Error, nothing recieved")
     
-    name_of_img = "img"+ counter
+    t = time.localtime()
+    timestamp = time.strftime('%b-%d-%Y_%H%M', t)
+    name_of_img = "img" + timestamp
     
 
     uploadToBlobStorage(img_to_upload, name_of_img)

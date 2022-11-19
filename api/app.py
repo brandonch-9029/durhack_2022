@@ -28,8 +28,7 @@ def uploadToBlobStorage(img, name_of_img):
 
 @app.route("/")
 def test():
-    print("w")
-    return 1
+    return "hello"
 
 
 
@@ -105,3 +104,5 @@ def img_upload_azure():
     END - Tag an Image - remote
     '''
     print("End of Computer Vision quickstart.")
+if __name__ == "__main__":
+    app.run(debug=True)

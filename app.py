@@ -4,6 +4,7 @@ from azure.cognitiveservices.vision.computervision.models import VisualFeatureTy
 from msrest.authentication import CognitiveServicesCredentials
 
 from array import array
+import requests
 import os
 #from PIL import Image
 import sys
@@ -28,7 +29,7 @@ def uploadToBlobStorage(img, name_of_img):
     with open(img_path, "rb") as data:
         blob_client.upload_blob(data, overwrite = True,  content_settings=image_content_setting)
 
-    response12 = img_upload_azure("https://durhack.blob.core.windows.net/img/" + name_of_img)
+    response12 = img_upload_azure('https://durhack.blob.core.windows.net/img/' + name_of_img)
     return response12
     
 
@@ -49,68 +50,43 @@ def save():
     
     t = time.localtime()
     timestamp = time.strftime('%b-%d-%Y_%H%M', t)
-    name_of_img = "img" + timestamp + ".jpg"
+    name_of_img = 'img' + timestamp + '.jpg'
     
 
     response = uploadToBlobStorage(img_to_upload, name_of_img)
     return response
 
 
-
-
-
-
-
-
-
-
-
-
 def img_upload_azure(bloblink):
-    response_list = []
-    '''
-    Authenticate
-    Authenticates your credentials and creates a client.
-    '''
-    subscription_key = "a417d15b78a4452bb8f1ec5c52836d4e"
-    endpoint = "https://computervisiontoad.cognitiveservices.azure.com/"
+    items_list = []
+    headers = {
+    # Request headers
+    'Content-Type': 'application/json',
+    'Ocp-Apim-Subscription-Key': 'a417d15b78a4452bb8f1ec5c52836d4e',
+    }
 
-    computervision_client = ComputerVisionClient(endpoint, CognitiveServicesCredentials(subscription_key))
-    '''
-    END - Authenticate
-    '''
-
-    '''
-    Quickstart variables
-    These variables are shared by several examples
-    '''
-    # Images used for the examples: Describe an image, Categorize an image, Tag an image, 
-    # Detect faces, Detect adult or racy content, Detect the color scheme, 
-    # Detect domain-specific content, Detect image types, Detect objects
-    images_folder = os.path.join (os.path.dirname(os.path.abspath(__file__)), "images")
-    remote_image_url = bloblink
-    '''
-    END - Quickstart variables
-    '''
-
-
-    '''
-    Tag an Image - remote
-    This example returns a tag (key word) for each thing in the image.
-    '''
-    # Call API with remote image
-    tags_result_remote = computervision_client.tag_image(remote_image_url )
-
-    # Print results with confidence score
-    print("Tags in the remote image: ")
-    if (len(tags_result_remote.tags) == 0):
-        print("No tags detected.")
-    else:
-        for tag in tags_result_remote.tags:
-            temp = "'{}' with confidence {:.2f}%".format(tag.name, tag.confidence * 100)
-            response_list.append(temp)
-    
-    return response_list
+    body = {'url': bloblink}
+    try:
+        response = requests.post("https://computervisiontoad.cognitiveservices.azure.com/vision/v3.2/detect?model-version=latest", json=body, headers=headers)
+        data = response.json()
+        for objects in data["objects"]:
+            object_info = []
+            item = objects["object"]
+            x = objects["rectangle"]["x"]
+            y = objects["rectangle"]["y"]
+            w = objects["rectangle"]["w"]
+            h = objects["rectangle"]["h"]
+            object_info.append(item)
+            object_info.append(x)
+            object_info.append(y)
+            object_info.append(w)
+            object_info.append(h)
+            items_list.append(object_info)
+        print(data)
+        return items_list
+    except Exception as e:
+        print(e)
+        print("[Errno {0}] {1}".format(e.errno, e.strerror))
 
 
 if __name__ == "__main__":

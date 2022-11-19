@@ -9,7 +9,7 @@ import os
 import sys
 import time
 import flask
-from azure.storage.blob import BlobServiceClient
+from azure.storage.blob import BlobServiceClient, ContentSettings
 import time
 storage_account_key = "htIhM+7rKVqMCz8G27yqpk7S7QPTOC8uU5Lo5viq+YjhDRfJzupx9v5+CmzpTXptVUMf5kgo5KGq+AStR4DoJQ=="
 storage_account_name = "durhack"
@@ -18,6 +18,7 @@ container_name = "img"
 
 app = flask.Flask(__name__)
 def uploadToBlobStorage(img, name_of_img):
+    image_content_setting = ContentSettings(content_type='image/jpeg')
     blob_service_client = BlobServiceClient.from_connection_string(connection_string)
     blob_client = blob_service_client.get_blob_client(container=container_name, blob=name_of_img)
     if img.filename != '':
@@ -25,10 +26,10 @@ def uploadToBlobStorage(img, name_of_img):
         img.save(img_path)
         
     with open(img_path, "rb") as data:
-        blob_client.upload_blob(data)
+        blob_client.upload_blob(data, overwrite = True,  content_settings=image_content_setting)
 
-    response = img_upload_azure("https://durhack.blob.core.windows.net/img/" + name_of_img + ".jpg")
-    print(response)
+    response12 = img_upload_azure("https://durhack.blob.core.windows.net/img/" + name_of_img)
+    return response12
     
 
 
@@ -48,11 +49,11 @@ def save():
     
     t = time.localtime()
     timestamp = time.strftime('%b-%d-%Y_%H%M', t)
-    name_of_img = "img" + timestamp
+    name_of_img = "img" + timestamp + ".jpg"
     
 
-    uploadToBlobStorage(img_to_upload, name_of_img)
-    return flask.Response("{'a':'b'}", status=201, mimetype='application/json')
+    response = uploadToBlobStorage(img_to_upload, name_of_img)
+    return response
 
 
 

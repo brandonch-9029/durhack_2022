@@ -26,6 +26,9 @@ def uploadToBlobStorage(img, name_of_img):
         
     with open(img_path, "rb") as data:
         blob_client.upload_blob(data)
+
+    response = img_upload_azure("https://durhack.blob.core.windows.net/img/" + name_of_img + ".jpg")
+    print(response)
     
 
 
@@ -62,13 +65,14 @@ def save():
 
 
 
-def img_upload_azure():
+def img_upload_azure(bloblink):
+    response_list = []
     '''
     Authenticate
     Authenticates your credentials and creates a client.
     '''
     subscription_key = "a417d15b78a4452bb8f1ec5c52836d4e"
-    endpoint = "PASTE_YOUR_COMPUTER_VISION_ENDPOINT_HERE"
+    endpoint = "https://computervisiontoad.cognitiveservices.azure.com/"
 
     computervision_client = ComputerVisionClient(endpoint, CognitiveServicesCredentials(subscription_key))
     '''
@@ -83,7 +87,7 @@ def img_upload_azure():
     # Detect faces, Detect adult or racy content, Detect the color scheme, 
     # Detect domain-specific content, Detect image types, Detect objects
     images_folder = os.path.join (os.path.dirname(os.path.abspath(__file__)), "images")
-    remote_image_url = "https://raw.githubusercontent.com/Azure-Samples/cognitive-services-sample-data-files/master/ComputerVision/Images/landmark.jpg"
+    remote_image_url = bloblink
     '''
     END - Quickstart variables
     '''
@@ -93,7 +97,6 @@ def img_upload_azure():
     Tag an Image - remote
     This example returns a tag (key word) for each thing in the image.
     '''
-    print("===== Tag an image - remote =====")
     # Call API with remote image
     tags_result_remote = computervision_client.tag_image(remote_image_url )
 
@@ -103,11 +106,11 @@ def img_upload_azure():
         print("No tags detected.")
     else:
         for tag in tags_result_remote.tags:
-            print("'{}' with confidence {:.2f}%".format(tag.name, tag.confidence * 100))
-    print()
-    '''
-    END - Tag an Image - remote
-    '''
-    print("End of Computer Vision quickstart.")
+            temp = "'{}' with confidence {:.2f}%".format(tag.name, tag.confidence * 100)"
+            response_list.append(temp)
+    
+    return response_list
+
+
 if __name__ == "__main__":
     app.run(debug=True)

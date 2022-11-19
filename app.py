@@ -81,8 +81,11 @@ def img_upload_azure(bloblink):
             object_info.append(y)
             object_info.append(w)
             object_info.append(h)
-            items_list.append(object_info)
-        print(data)
+        width_img = data["metadata"]["width"]
+        height_img = data["metadata"]["height"]
+        object_info.append(width_img)
+        object_info.append(height_img)
+        items_list.append(object_info)
         return items_list
     except Exception as e:
         print(e)

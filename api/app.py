@@ -18,6 +18,21 @@ container_name = "img"
 
 app = flask.Flask(__name__)
 counter = 1
+def uploadToBlobStorage(img, name_of_img):
+    blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+    blob_client = blob_service_client.get_blob_client(container=container_name, blob=name_of_img)
+
+    with open(img, "rb") as data:
+        blob_client.upload_blob(data)
+
+
+@app.route("/")
+def test():
+    print("w")
+    return 1
+
+
+
 @app.route("/img_upload", methods=["POST", "GET"])
 def save():
     try:
@@ -33,14 +48,6 @@ def save():
     return flask.Response("{'a':'b'}", status=201, mimetype='application/json')
 
 
-
-
-def uploadToBlobStorage(img, name_of_img):
-    blob_service_client = BlobServiceClient.from_connection_string(connection_string)
-    blob_client = blob_service_client.get_blob_client(container=container_name, blob=name_of_img)
-
-    with open(img, "rb") as data:
-        blob_client.upload_blob(data)
 
 
 

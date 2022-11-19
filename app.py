@@ -69,6 +69,10 @@ def img_upload_azure(bloblink):
     try:
         response = requests.post("https://computervisiontoad.cognitiveservices.azure.com/vision/v3.2/detect?model-version=latest", json=body, headers=headers)
         data = response.json()
+        width_img = data["metadata"]["width"]
+        height_img = data["metadata"]["height"]
+        items_list.append(width_img)
+        items_list.append(height_img)
         for objects in data["objects"]:
             object_info = []
             item = objects["object"]
@@ -81,11 +85,7 @@ def img_upload_azure(bloblink):
             object_info.append(y)
             object_info.append(w)
             object_info.append(h)
-        width_img = data["metadata"]["width"]
-        height_img = data["metadata"]["height"]
-        object_info.append(width_img)
-        object_info.append(height_img)
-        items_list.append(object_info)
+            items_list.append(object_info)
         return items_list
     except Exception as e:
         print(e)

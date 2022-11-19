@@ -24,6 +24,8 @@ def uploadToBlobStorage(img, name_of_img):
 
     with open(img, "rb") as data:
         blob_client.upload_blob(data)
+    counter += 1
+    return counter
 
 
 @app.route("/")

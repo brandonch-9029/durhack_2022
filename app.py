@@ -106,7 +106,7 @@ def img_upload_azure(bloblink):
         print("No tags detected.")
     else:
         for tag in tags_result_remote.tags:
-            temp = "'{}' with confidence {:.2f}%".format(tag.name, tag.confidence * 100)"
+            temp = "'{}' with confidence {:.2f}%".format(tag.name, tag.confidence * 100)
             response_list.append(temp)
     
     return response_list

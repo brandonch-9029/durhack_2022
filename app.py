@@ -1,8 +1,3 @@
-from azure.cognitiveservices.vision.computervision import ComputerVisionClient
-from azure.cognitiveservices.vision.computervision.models import OperationStatusCodes
-from azure.cognitiveservices.vision.computervision.models import VisualFeatureTypes
-from msrest.authentication import CognitiveServicesCredentials
-
 from array import array
 import requests
 import os
@@ -11,7 +6,9 @@ import sys
 import time
 import flask
 from azure.storage.blob import BlobServiceClient, ContentSettings
+from azure.data.tables import TableServiceClient, TableClient
 import time
+import json
 storage_account_key = "htIhM+7rKVqMCz8G27yqpk7S7QPTOC8uU5Lo5viq+YjhDRfJzupx9v5+CmzpTXptVUMf5kgo5KGq+AStR4DoJQ=="
 storage_account_name = "durhack"
 connection_string = "DefaultEndpointsProtocol=https;AccountName=durhack;AccountKey=htIhM+7rKVqMCz8G27yqpk7S7QPTOC8uU5Lo5viq+YjhDRfJzupx9v5+CmzpTXptVUMf5kgo5KGq+AStR4DoJQ==;EndpointSuffix=core.windows.net"
@@ -29,8 +26,8 @@ def uploadToBlobStorage(img, name_of_img):
     with open(img_path, "rb") as data:
         blob_client.upload_blob(data, overwrite = True,  content_settings=image_content_setting)
 
-    response12 = img_upload_azure('https://durhack.blob.core.windows.net/img/' + name_of_img)
-    return response12
+    upload = img_upload_azure('https://durhack.blob.core.windows.net/img/' + name_of_img, name_of_img)
+    return upload
     
 
 
@@ -53,11 +50,14 @@ def save():
     name_of_img = 'img' + timestamp + '.jpg'
     
 
-    response = uploadToBlobStorage(img_to_upload, name_of_img)
-    return response
+    final_return = uploadToBlobStorage(img_to_upload, name_of_img)
+    return final_return
 
 
-def img_upload_azure(bloblink):
+@app.route("/get_data", methods=["POST", "GET"])
+
+
+def img_upload_azure(bloblink, name_of_img):
     items_list = []
     headers = {
     # Request headers
@@ -86,10 +86,53 @@ def img_upload_azure(bloblink):
             object_info.append(w)
             object_info.append(h)
             items_list.append(object_info)
-        return items_list
+        upload_to_azure_tables(items_list, name_of_img=name_of_img)
+        return name_of_img
     except Exception as e:
         print(e)
         print("[Errno {0}] {1}".format(e.errno, e.strerror))
+
+def create_dict(items_list):
+    objects = {"height" : items_list[0], "width": items_list[1]}
+    print(items_list)
+    n = len(items_list)
+    for i in range(2, n):
+        objects["object"+ str(i-1)] ={}
+        for j in range(0, 5):
+            if j == 0:
+                objects["object" + str(i-1)]["item"] = items_list[i][j]
+            elif j == 1:
+                objects["object" + str(i-1)]["x"] = items_list[i][j]
+            elif j == 2:
+                objects["object" + str(i-1)]["y"] = items_list[i][j]
+            elif j == 3:
+                objects["object" + str(i-1)]["w"] = items_list[i][j]
+            elif j == 4:
+                objects["object" + str(i-1)]["h"] = items_list[i][j]
+    return objects
+
+               
+         
+def upload_to_azure_tables(items_list, name_of_img):
+    dict_to_upload = create_dict(items_list)
+    entity = {
+        "PartitionKey" : name_of_img,
+        "RowKey" : json.dumps(dict_to_upload)
+        }
+    connection_string_tables = "DefaultEndpointsProtocol=https;AccountName=durhack;AccountKey=htIhM+7rKVqMCz8G27yqpk7S7QPTOC8uU5Lo5viq+YjhDRfJzupx9v5+CmzpTXptVUMf5kgo5KGq+AStR4DoJQ==;EndpointSuffix=core.windows.net"
+    service = TableServiceClient.from_connection_string(connection_string_tables)
+    table_client = service.get_table_client(table_name="durhacktable")
+    entity = table_client.create_entity(entity=entity)
+    return name_of_img 
+
+def get_table_data_azure(name_of_img):
+    my_filter = "PartitionKey eq '{}'".format(name_of_img)
+    table_client = TableClient.from_connection_string(conn_str="DefaultEndpointsProtocol=https;AccountName=durhack;AccountKey=htIhM+7rKVqMCz8G27yqpk7S7QPTOC8uU5Lo5viq+YjhDRfJzupx9v5+CmzpTXptVUMf5kgo5KGq+AStR4DoJQ==;EndpointSuffix=core.windows.net", table_name="durhacktable")
+    entities = table_client.query_entities(my_filter)
+    for entity in entities:
+        return entity["RowKey"]
+
+
 
 
 if __name__ == "__main__":

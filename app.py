@@ -93,7 +93,7 @@ def img_upload_azure(bloblink, name_of_img):
         print("[Errno {0}] {1}".format(e.errno, e.strerror))
 
 def create_dict(items_list):
-    objects = {"height" : items_list[1], "width": items_list[0]}
+    objects = {"width": items_list[0], "height" : items_list[1]}
     print(items_list)
     n = len(items_list)
     for i in range(2, n):

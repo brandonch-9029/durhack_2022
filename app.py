@@ -17,7 +17,6 @@ container_name = "img"
 
 app = flask.Flask(__name__)
 #Set up Flask to bypass CORS at the front end:
-cors = CORS(app)
 def uploadToBlobStorage(img, name_of_img):
     image_content_setting = ContentSettings(content_type='image/jpeg')
     blob_service_client = BlobServiceClient.from_connection_string(connection_string)
@@ -139,8 +138,6 @@ def get_table_data_azure(name_of_img):
     entities = table_client.query_entities(my_filter)
     for entity in entities:
         return entity["RowKey"]
-
-
 
 
 if __name__ == "__main__":

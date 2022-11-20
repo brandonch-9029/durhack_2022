@@ -17,6 +17,8 @@ container_name = "img"
 
 app = flask.Flask(__name__)
 #Set up Flask to bypass CORS at the front end:
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 def uploadToBlobStorage(img, name_of_img):
     image_content_setting = ContentSettings(content_type='image/jpeg')
     blob_service_client = BlobServiceClient.from_connection_string(connection_string)

@@ -54,7 +54,7 @@ def save():
     return final_return
 
 # request for JSONData to draw rectangles
-@app.route("/<name_of_img>/get_data", methods=["GET"])
+@app.route("/get_data/<name_of_img>", methods=["GET"])
 def returnJson(name_of_img):
     data = get_table_data_azure(name_of_img=name_of_img)
     JSONData = flask.jsonify(data)

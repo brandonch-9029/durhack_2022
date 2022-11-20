@@ -9,7 +9,6 @@ from azure.storage.blob import BlobServiceClient, ContentSettings
 from azure.data.tables import TableServiceClient, TableClient
 import time
 import json
-from flask_cors import CORS
 storage_account_key = "htIhM+7rKVqMCz8G27yqpk7S7QPTOC8uU5Lo5viq+YjhDRfJzupx9v5+CmzpTXptVUMf5kgo5KGq+AStR4DoJQ=="
 storage_account_name = "durhack"
 connection_string = "DefaultEndpointsProtocol=https;AccountName=durhack;AccountKey=htIhM+7rKVqMCz8G27yqpk7S7QPTOC8uU5Lo5viq+YjhDRfJzupx9v5+CmzpTXptVUMf5kgo5KGq+AStR4DoJQ==;EndpointSuffix=core.windows.net"
@@ -53,6 +52,7 @@ def save():
     
 
     final_return = uploadToBlobStorage(img_to_upload, name_of_img)
+    final_return.headers.add('Access-Control-Allow-Origin', '*')
     return final_return
 
 # request for JSONData to draw rectangles

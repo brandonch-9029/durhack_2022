@@ -9,12 +9,14 @@ from azure.storage.blob import BlobServiceClient, ContentSettings
 from azure.data.tables import TableServiceClient, TableClient
 import time
 import json
+from flask_cors import CORS, cross_origin
 storage_account_key = "htIhM+7rKVqMCz8G27yqpk7S7QPTOC8uU5Lo5viq+YjhDRfJzupx9v5+CmzpTXptVUMf5kgo5KGq+AStR4DoJQ=="
 storage_account_name = "durhack"
 connection_string = "DefaultEndpointsProtocol=https;AccountName=durhack;AccountKey=htIhM+7rKVqMCz8G27yqpk7S7QPTOC8uU5Lo5viq+YjhDRfJzupx9v5+CmzpTXptVUMf5kgo5KGq+AStR4DoJQ==;EndpointSuffix=core.windows.net"
 container_name = "img"
 
 app = flask.Flask(__name__)
+CORS(app, support_credentials=True)
 def uploadToBlobStorage(img, name_of_img):
     image_content_setting = ContentSettings(content_type='image/jpeg')
     blob_service_client = BlobServiceClient.from_connection_string(connection_string)
@@ -38,6 +40,7 @@ def test():
 
 # POST request to upload img to azure database and use computer vision
 @app.route("/img_upload", methods=["POST", "GET"])
+@cross_origin(supports_credentials=True)
 def save():
     try:
         img_to_upload = flask.request.files["imgfile"]
@@ -56,6 +59,7 @@ def save():
 
 # request for JSONData to draw rectangles
 @app.route("/get_data/<name_of_img>", methods=["GET"])
+@cross_origin(supports_credentials=True)
 def returnJson(name_of_img):
     data = get_table_data_azure(name_of_img=name_of_img)
     JSONData = flask.jsonify(data)

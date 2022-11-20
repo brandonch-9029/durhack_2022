@@ -9,14 +9,12 @@ from azure.storage.blob import BlobServiceClient, ContentSettings
 from azure.data.tables import TableServiceClient, TableClient
 import time
 import json
-from flask_cors import CORS
 storage_account_key = "htIhM+7rKVqMCz8G27yqpk7S7QPTOC8uU5Lo5viq+YjhDRfJzupx9v5+CmzpTXptVUMf5kgo5KGq+AStR4DoJQ=="
 storage_account_name = "durhack"
 connection_string = "DefaultEndpointsProtocol=https;AccountName=durhack;AccountKey=htIhM+7rKVqMCz8G27yqpk7S7QPTOC8uU5Lo5viq+YjhDRfJzupx9v5+CmzpTXptVUMf5kgo5KGq+AStR4DoJQ==;EndpointSuffix=core.windows.net"
 container_name = "img"
 
 app = flask.Flask(__name__)
-
 def uploadToBlobStorage(img, name_of_img):
     image_content_setting = ContentSettings(content_type='image/jpeg')
     blob_service_client = BlobServiceClient.from_connection_string(connection_string)
@@ -138,6 +136,8 @@ def get_table_data_azure(name_of_img):
     entities = table_client.query_entities(my_filter)
     for entity in entities:
         return entity["RowKey"]
+
+
 
 
 if __name__ == "__main__":

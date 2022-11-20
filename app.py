@@ -36,7 +36,7 @@ def test():
     return "hello"
 
 
-
+# POST request to upload img to azure database and use computer vision
 @app.route("/img_upload", methods=["POST", "GET"])
 def save():
     try:
@@ -53,10 +53,15 @@ def save():
     final_return = uploadToBlobStorage(img_to_upload, name_of_img)
     return final_return
 
+# request for JSONData to draw rectangles
+@app.route("/get_data", methods=["GET"])
+def returnJson(name_of_img):
+    data = get_table_data_azure(name_of_img=name_of_img)
+    JSONData = flask.jsonify(data)
+    return JSONData
 
-@app.route("/get_data", methods=["POST", "GET"])
 
-
+# uploading the img to the azure datalake
 def img_upload_azure(bloblink, name_of_img):
     items_list = []
     headers = {
@@ -91,7 +96,7 @@ def img_upload_azure(bloblink, name_of_img):
     except Exception as e:
         print(e)
         print("[Errno {0}] {1}".format(e.errno, e.strerror))
-
+# create the dictionary to upload to the azure table
 def create_dict(items_list):
     objects = {"width": items_list[0], "height" : items_list[1]}
     print(items_list)
@@ -112,7 +117,7 @@ def create_dict(items_list):
     return objects
 
                
-         
+# upload JSON data to azure table         
 def upload_to_azure_tables(items_list, name_of_img):
     dict_to_upload = create_dict(items_list)
     entity = {
@@ -124,7 +129,7 @@ def upload_to_azure_tables(items_list, name_of_img):
     table_client = service.get_table_client(table_name="durhacktable")
     entity = table_client.create_entity(entity=entity)
     return name_of_img 
-
+# query azure table for img data
 def get_table_data_azure(name_of_img):
     my_filter = "PartitionKey eq '{}'".format(name_of_img)
     table_client = TableClient.from_connection_string(conn_str="DefaultEndpointsProtocol=https;AccountName=durhack;AccountKey=htIhM+7rKVqMCz8G27yqpk7S7QPTOC8uU5Lo5viq+YjhDRfJzupx9v5+CmzpTXptVUMf5kgo5KGq+AStR4DoJQ==;EndpointSuffix=core.windows.net", table_name="durhacktable")
